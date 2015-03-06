@@ -14,10 +14,13 @@ class Shader(object):
         self.snippets = []
 
     def __getitem__(self, key):
+        # Look for an existing snippet
         for snippet in self.snippets[::-1]:
             if snippet.name == key:
                 return snippet
-        raise IndexError("Unknown hook (%s)" % key)
+
+        # Try to create one
+        return self.__call__(key)
 
     def __call__(self, key):
         if key in self.sources.keys():
@@ -65,6 +68,10 @@ class Shader(object):
                     name = "_io_%d_return" % (i+1)
                 output.source.holder = name
                 output.target.target.holder = name
+#                print output.target.source
+#            for input in snippet.inputs:
+#                if isinstance(input.target, Prototype):
+
 
 
     def __str__(self):
@@ -80,14 +87,22 @@ class Shader(object):
                 s += str(struct) + "\n"
             for variable in snippet.variables:
                 s += str(variable) + "\n"
+
             for function in snippet.functions:
                 code = str(function) + "\n"
                 for input in snippet.inputs:
                     name = input.target.name
                     if input.target and not isinstance(input.target, Parameter):
-                        alias = input.source.alias
+                        alias = input.target.alias
                         regex = r'(?<=[^a-zA-Z0-9_])%s(?=[^a-zA-Z0-9_])' % name
                         code = re.sub(regex, alias, code)
+
+                for input in snippet.inputs:
+                    name = input.target.name
+                    alias = input.source.source.alias
+                    regex = r'(?<=[^a-zA-Z0-9_])%s(?=[^a-zA-Z0-9_])' % name
+                    code = re.sub(regex, alias, code)
+
                 for variable in snippet.variables:
                     name = variable.name
                     alias = variable.alias

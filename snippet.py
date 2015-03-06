@@ -99,9 +99,15 @@ class Snippet(object):
                 deps.append(input.source.snippet)
         return deps
 
+    def __getitem__(self, key):
+        self._selection == key
+        return self
+
 
     def __rshift__(self, other):
         self.connect(other)
+        self._selection = None
+        other._selection = None
         return other
 
 
@@ -117,5 +123,6 @@ class Snippet(object):
                     output.target = input
                     input.source = output
                     return
+
 
         raise RuntimeError("No compatible I/O found")

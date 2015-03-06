@@ -35,13 +35,14 @@ void set_color(vec4 color)
 }
 """
 
-snippets = { 'get_colors'     : get_colors,
+snippets = { 'get_colors'    : get_colors,
              'apply_filter'  : apply_filter,
              'combine'       : combine,
              'set_color'     : set_color }
 
 # ("snippet") -> Explicitly creates snippet
 # ["snippet"] -> Reuse snippet or create a new one if not found
+# ["snippet"]["hook"] -> Select "hook" (input or output)
 shader = Shader(snippets)
 shader("get_colors") >> shader("apply_filter") >> shader("combine") >> shader("set_color")
 shader["get_colors"] >> shader("apply_filter") >> shader["combine"]
