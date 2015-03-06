@@ -8,25 +8,27 @@ from parser import *
 
 
 class Input(object):
-    def __init__(self, snippet, target):
-        self.source = None
-        self.target = target
+    """ """
+    def __init__(self, snippet, hook):
         self.snippet = snippet
+        self.hook    = hook
+        self.source  = None
 
     @property
     def type(self):
-        return self.target.type
+        return self.hook.type
 
 
 class Output(object):
-    def __init__(self, snippet, source):
-        self.source = source
-        self.target = None
+    """ """
+    def __init__(self, snippet, hook):
         self.snippet = snippet
+        self.hook    = hook
+        self.targets = []
 
     @property
     def type(self):
-        return self.source.type
+        return self.hook.type
 
 
 
@@ -114,15 +116,14 @@ class Snippet(object):
     def connect(self, other):
 
         for output in self.outputs:
-            if output.target is not None:
-                continue
+            #if output.target is not None:
+            #    continue
             for input in other.inputs:
                 if input.source is not None:
                     continue
                 if output.type == input.type:
-                    output.target = input
+                    output.targets.append(input)
                     input.source = output
                     return
-
 
         raise RuntimeError("No compatible I/O found")

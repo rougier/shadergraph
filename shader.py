@@ -62,12 +62,13 @@ class Shader(object):
         # Name variable holding computation results
         for i,snippet in enumerate(self.snippets):
             for output in snippet.outputs:
-                if isinstance(output.source, Parameter):
-                    name = "_io_%d_%s" % (i+1,output.source.name)
-                elif isinstance(output.source, Function):
+                if isinstance(output.hook, Parameter):
+                    name = "_io_%d_%s" % (i+1,output.hook.name)
+                elif isinstance(output.hook, Function):
                     name = "_io_%d_return" % (i+1)
-                output.source.holder = name
-                output.target.target.holder = name
+                output.hook.holder = name
+                for target in output.targets:
+                    target.hook.holder = name
 #                print output.target.source
 #            for input in snippet.inputs:
 #                if isinstance(input.target, Prototype):
@@ -91,15 +92,15 @@ class Shader(object):
             for function in snippet.functions:
                 code = str(function) + "\n"
                 for input in snippet.inputs:
-                    name = input.target.name
-                    if input.target and not isinstance(input.target, Parameter):
-                        alias = input.target.alias
+                    name = input.hook.name
+                    if not isinstance(input.hook, Parameter):
+                        alias = input.hook.alias
                         regex = r'(?<=[^a-zA-Z0-9_])%s(?=[^a-zA-Z0-9_])' % name
                         code = re.sub(regex, alias, code)
 
                 for input in snippet.inputs:
-                    name = input.target.name
-                    alias = input.source.source.alias
+                    name = input.hook.name
+                    alias = input.source.hook.alias
                     regex = r'(?<=[^a-zA-Z0-9_])%s(?=[^a-zA-Z0-9_])' % name
                     code = re.sub(regex, alias, code)
 
@@ -117,9 +118,9 @@ class Shader(object):
         # Variable declaration
         for i,snippet in enumerate(snippets):
             for output in snippet.outputs:
-                if isinstance(output.source, Parameter):
-                    s += "  %s _io_%d_%s;\n" % (output.type, i+1, output.source.name)
-                if isinstance(output.source, Function):
+                if isinstance(output.hook, Parameter):
+                    s += "  %s _io_%d_%s;\n" % (output.type, i+1, output.hook.name)
+                if isinstance(output.hook, Function):
                     if output.type.base not in ["", "void"]:
                         s += "  %s _io_%d_return;\n" % (output.type, i+1)
         s += "\n"
