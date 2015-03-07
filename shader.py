@@ -69,10 +69,6 @@ class Shader(object):
                 output.hook.holder = name
                 for target in output.targets:
                     target.hook.holder = name
-#                print output.target.source
-#            for input in snippet.inputs:
-#                if isinstance(input.target, Prototype):
-
 
 
     def __str__(self):
@@ -111,33 +107,64 @@ class Shader(object):
                     code = re.sub(regex, alias, code)
                 s += code
             s += "\n"
-
         s += "\n"
+
+        # Generate main
         s += "void main() {\n"
 
-        # Variable declaration
+        # Variable declarations
         for i,snippet in enumerate(snippets):
             for output in snippet.outputs:
                 if isinstance(output.hook, Parameter):
                     s += "  %s _io_%d_%s;\n" % (output.type, i+1, output.hook.name)
-                if isinstance(output.hook, Function):
-                    if output.type.base not in ["", "void"]:
-                        s += "  %s _io_%d_return;\n" % (output.type, i+1)
-        s += "\n"
+#                if isinstance(output.hook, Function):
+#                    if output.type.base not in ["", "void"]:
+#                        s += "  %s _io_%d_return;\n" % (output.type, i+1)
+#        s += "\n"
 
-        # Function calls
+
+        def call(function):
+            s = "  "
+            if function.type.base not in ["", "void"]:
+                s += "%s %s = " % (function.type, function.holder)
+            s += function.alias + "("
+            parameters = function.parameters
+            for i,parameter in enumerate(parameters):
+                s += parameter.holder
+                if i < len(parameters)-1:
+                    s+= ", "
+            s += ");\n"
+            return s;
+
         for i,snippet in enumerate(self.snippets):
             for function in snippet.functions:
-                s += "  "
-                if function.type.base not in ["", "void"]:
-                    s += "%s = " % function.holder
-                s += function.alias + "("
-                parameters = function.parameters
-                for i,parameter in enumerate(parameters):
-                    s += parameter.holder
-                    if i < len(parameters)-1:
-                        s+= ", "
-            s += ");\n"
+                function.called = False
+
+        # Function calls
+        for i,snippet in enumerate(snippets):
+
+            for function in snippet.functions:
+                for parameter in function.parameters:
+                    if parameter.inout in ["inout","out"]:
+                        s += call(function)
+                        break
+
+            for output in snippet.outputs:
+                if isinstance(output.hook, Function):
+                    need_call = False
+                    for target in output.targets:
+                        if isinstance(target.hook, Parameter):
+                            need_call = True
+                    if need_call:
+                        s += call(output.hook)
+
+            for function in snippet.functions:
+                if re.search("gl_FragColor|gl_Position", function.code):
+                    s += call(function)
+
+        # for i,snippet in enumerate(self.snippets):
+        #     for function in snippet.functions:
+        #         s += call(function)
 
         s += "}\n"
         return s

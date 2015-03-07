@@ -8,7 +8,7 @@ from shader import Shader
 
 get_colors = """
 uniform vec4 diffuse_color;
-void getColors(out vec4 color1, out vec4 color2)
+void get_colors(out vec4 color1, out vec4 color2)
 {
     color1 = diffuse_color;
     color2 = diffuse_color.zyxw;
