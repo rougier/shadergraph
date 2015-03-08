@@ -120,7 +120,7 @@ class Shader(object):
 #                if isinstance(output.hook, Function):
 #                    if output.type.base not in ["", "void"]:
 #                        s += "  %s _io_%d_return;\n" % (output.type, i+1)
-#        s += "\n"
+        s += "\n"
 
 
         def call(function):
